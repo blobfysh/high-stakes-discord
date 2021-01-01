@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+	id        String     @id
+	balance   Int        @default(100)
+	createdAt DateTime   @default(now())
+	cooldowns Cooldown[]
+}
+
+// User 1-n Cooldown
+model Cooldown {
+	type   CooldownType
+	user   User         @relation(fields: [userId], references: [id])
+	userId String
+
+	@@id([type, userId])
+}
+
+enum CooldownType {
+	DAILY
+}

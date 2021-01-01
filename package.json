@@ -1,0 +1,41 @@
+{
+  "name": "typescript_gambling",
+  "version": "1.0.0",
+  "description": "A Discord gambling bot made with Typescript",
+  "main": "./build/index.js",
+  "author": "blobfysh",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon",
+    "start": "node build/index.js",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix"
+  },
+  "devDependencies": {
+    "@prisma/cli": "2.13.1",
+    "@typescript-eslint/eslint-plugin": "^4.11.1",
+    "@typescript-eslint/parser": "^4.11.1",
+    "eslint": "^7.16.0",
+    "nodemon": "^2.0.6",
+    "ts-node": "^9.1.1"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "test/*"
+    ],
+    "watch": [
+      "src"
+    ],
+    "ext": ".ts,.js",
+    "exec": "ts-node ./src/index.ts",
+    "delay": "3500"
+  },
+  "dependencies": {
+    "@prisma/client": "2.13.1",
+    "typescript": "^4.1.3"
+  }
+}

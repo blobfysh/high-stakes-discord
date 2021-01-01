@@ -1,0 +1,9 @@
+.github
+.git
+.gitignore
+.eslintrc.js
+.eslintignore
+build
+.editorconfig
+node_modules
+*.env
