@@ -14,6 +14,8 @@ CREATE TABLE "User" (
 CREATE TABLE "Cooldown" (
     "type" "CooldownType" NOT NULL,
     "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "length" INTEGER NOT NULL,
 
     PRIMARY KEY ("type","userId")
 );

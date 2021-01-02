@@ -75,7 +75,6 @@ module.exports = {
 		'accessor-pairs': 'warn',
 		'no-empty-function': 'error',
 		'no-floating-decimal': 'error',
-		'no-invalid-this': 'error',
 		'no-lone-blocks': 'error',
 		'no-new-func': 'error',
 		'no-new-wrappers': 'error',
