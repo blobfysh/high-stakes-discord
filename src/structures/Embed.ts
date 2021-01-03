@@ -1,43 +1,11 @@
-interface EmbedField {
-	name: string
-	value: string
-	inline: boolean
-}
-
-interface EmbedFooter {
-	text: string
-	icon_url: string | null
-}
-
-interface EmbedAuthor {
-	name: string
-	icon_url: string | null
-	url: string | null
-}
-
-interface EmbedImage {
-	url: string
-}
-
-interface EmbedInterface {
-	fields: EmbedField[]
-	color: number
-	title?: string
-	url?: string
-	description?: string
-	image?: EmbedImage
-	thumbnail?: EmbedImage
-	footer?: EmbedFooter
-	author?: EmbedAuthor
-	timestamp?: Date
-}
+import { EmbedOptions } from 'eris'
 
 class Embed {
-	embed: EmbedInterface
+	embed: EmbedOptions
 
 	constructor() {
 		this.embed = {
-			fields: [],
+			// default embed color here
 			color: 7099568
 		}
 	}
@@ -46,10 +14,14 @@ class Embed {
 		if (!name) {
 			return this
 		}
-		else if (this.embed.fields.length > 25) {
+		else if (!value) {
 			return this
 		}
-		else if (!value) {
+
+		if (!this.embed.fields) {
+			this.embed.fields = []
+		}
+		else if (this.embed?.fields.length > 25) {
 			return this
 		}
 
@@ -111,7 +83,7 @@ class Embed {
 
 		this.embed.footer = {
 			text: text.substring(0, 2048),
-			icon_url: icon ?? null
+			icon_url: icon
 		}
 
 		return this
@@ -128,8 +100,8 @@ class Embed {
 
 		this.embed.author = {
 			name: name.substring(0, 256),
-			icon_url: icon ?? null,
-			url: url ?? null
+			icon_url: icon,
+			url
 		}
 
 		return this

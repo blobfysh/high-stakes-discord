@@ -10,7 +10,6 @@ export type CommandPermission = keyof typeof Constants.Permissions
 
 type CommandCategory = 'admin' | 'game' | 'info'
 
-
 // Discriminating union based on guildOnly field which allows me to get the correct message channel types
 interface DMCommand {
 	name: string
@@ -19,7 +18,7 @@ interface DMCommand {
 	category: CommandCategory
 	permissions: CommandPermission[]
 	guildOnly: false
-	execute(app: App, message: Message<TextableChannel>, commandArgs: CommandArguments): Promise<void>
+	execute(app: App, message: Message<TextableChannel>, commandArgs: CommandArguments): Promise<void | any>
 }
 interface GuildCommand {
 	name: string
@@ -28,7 +27,7 @@ interface GuildCommand {
 	category: CommandCategory
 	permissions: CommandPermission[]
 	guildOnly: true
-	execute(app: App, message: Message<GuildTextableChannel>, commandArgs: CommandArguments): Promise<void>
+	execute(app: App, message: Message<GuildTextableChannel>, commandArgs: CommandArguments): Promise<void | any>
 }
 
 export type Command = DMCommand | GuildCommand
