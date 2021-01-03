@@ -1,21 +1,15 @@
 import { Message } from 'eris'
+import { prefix, debug } from '../config'
 import App from '../app'
 
 export async function run(this: App, message: Message): Promise<void> {
 	if (message.author.bot) return
 
-	if (!message.content.toLowerCase().startsWith(process.env.PREFIX)) return
+	if (!message.content.toLowerCase().startsWith(prefix)) return
 
-	const args = message.content.slice(process.env.PREFIX.length).split(/ +/)
+	const args = message.content.slice(prefix.length).split(/ +/)
 	const commandName = args.shift()?.toLowerCase()
 
-	console.log(this.commands)
-	this.commands.find(cmd => {
-		console.log(cmd)
-		console.log(cmd.name)
-		console.log(cmd.aliases)
-		return true
-	})
 	const command = this.commands.find(cmd => cmd.name === commandName || (cmd.aliases.length && cmd.aliases.includes(commandName ?? '')))
 
 	// no command was found
@@ -43,13 +37,10 @@ export async function run(this: App, message: Message): Promise<void> {
 	try {
 		console.log(`${message.author.id} ran command: ${command.name}`)
 
-		await command.execute(this, message, {
-			args,
-			prefix: process.env.PREFIX
-		})
+		await command.execute(this, message, { args, prefix })
 
 		// dont add spamCooldown if user is admin
-		if (this.sets.adminUsers.has(message.author.id)) return
+		if (debug || this.sets.adminUsers.has(message.author.id)) return
 
 		const spamCD = 2000
 		this.sets.spamCooldown.add(message.author.id)

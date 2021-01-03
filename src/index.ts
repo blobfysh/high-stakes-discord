@@ -1,4 +1,5 @@
 import { PrismaClient, User } from '@prisma/client'
+import { botToken } from './config'
 import App from './app'
 
 const prisma = new PrismaClient()
@@ -8,7 +9,7 @@ async function main() {
 
 	console.log(allUsers)
 
-	const app = new App(`Bot ${process.env.BOT_TOKEN}`, {
+	const app = new App(`Bot ${botToken}`, {
 		disableEvents: {
 			GUILD_BAN_ADD: true,
 			GUILD_BAN_REMOVE: true,
