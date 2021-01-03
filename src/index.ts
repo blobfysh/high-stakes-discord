@@ -38,8 +38,4 @@ async function main() {
 	app.launch()
 }
 
-for (let i = 1; i <= 10; i++) {
-	console.log(`HELLO #${i}!`)
-}
-
 main()

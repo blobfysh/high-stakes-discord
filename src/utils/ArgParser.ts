@@ -2,7 +2,7 @@ import { Message, Member, GuildTextableChannel } from 'eris'
 import App from '../app'
 
 class ArgParser {
-	app: App
+	private app: App
 
 	constructor(app: App) {
 		this.app = app

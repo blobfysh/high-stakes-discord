@@ -1,4 +1,5 @@
-import { Message } from 'eris'
+import { GuildTextableChannel, Message } from 'eris'
+import { CommandPermission } from '../types/Commands'
 import { prefix, debug } from '../config'
 import App from '../app'
 
@@ -13,18 +14,18 @@ export async function run(this: App, message: Message): Promise<void> {
 	const command = this.commands.find(cmd => cmd.name === commandName || (cmd.aliases.length && cmd.aliases.includes(commandName ?? '')))
 
 	// no command was found
-	if (!command) return
+	if (!command) { return }
 
-	/* TODO add categories to commands and check if user is admin here
-	if (command.category == 'admin' && !this.sets.adminUsers.has(message.author.id)) return
-	*/
+	else if (command.category === 'admin' && !this.sets.adminUsers.has(message.author.id)) { return }
 
-	/* TODO check for required permissions to run command here
-	if (message.guildID && !botHasPermissions(message, message.channel.permissionsOf(this.bot.user.id), this.config.requiredPerms)) return
-	*/
+	// check if bot has needed permissions to run command
+	else if (message.guildID !== undefined && !botHasPermissions(<Message<GuildTextableChannel>>message, command.permissions)) { return }
+
+	// guildOnly command cannot be used in DM channel
+	else if (message.guildID === undefined && command.guildOnly) { return }
 
 	// check if user has spam cooldown
-	if (this.sets.spamCooldown.has(message.author.id)) {
+	else if (this.sets.spamCooldown.has(message.author.id)) {
 		const botMsg = await message.channel.createMessage('⏱ HEY SLOW IT DOWN `2 seconds`')
 		setTimeout(() => {
 			botMsg.delete()
@@ -37,7 +38,14 @@ export async function run(this: App, message: Message): Promise<void> {
 	try {
 		console.log(`${message.author.id} ran command: ${command.name}`)
 
-		await command.execute(this, message, { args, prefix })
+		// have to do this for proper types in command files
+		if (command.guildOnly) {
+			await command.execute(this, <Message<GuildTextableChannel>>message, { args, prefix })
+		}
+		else {
+			await command.execute(this, message, { args, prefix })
+		}
+
 
 		// dont add spamCooldown if user is admin
 		if (debug || this.sets.adminUsers.has(message.author.id)) return
@@ -55,21 +63,29 @@ export async function run(this: App, message: Message): Promise<void> {
 	}
 }
 
-/*
-function botHasPermissions(message, botPerms, requiredPerms) {
-	const neededPerms = []
+function botHasPermissions(message: Message<GuildTextableChannel>, requiredPerms: CommandPermission[]) {
+	const botPerms = message.channel.permissionsOf(message.channel.client.user.id)
+	const neededPerms: CommandPermission[] = []
 
-	for (const perm of Object.keys(requiredPerms)) {
+	for (const perm of requiredPerms) {
 		if (!botPerms.has(perm)) {
-			neededPerms.push(requiredPerms[perm])
+			neededPerms.push(perm)
 		}
 	}
 
 	if (neededPerms.length) {
-		const permsString = neededPerms.map(perm => neededPerms.length > 1 && neededPerms.indexOf(perm) == (neededPerms.length - 1) ? `or \`${perm}\`` : `\`${perm}\``).join(', ')
-		if (!neededPerms.includes('Send Messages')) message.channel.createMessage(`I don't have permission to ${permsString}... Please reinvite me or give me those permissions :(`)
+		const permsString = neededPerms.map(perm => {
+			if (neededPerms.length > 1 && neededPerms.indexOf(perm) === (neededPerms.length - 1)) {
+				return `or \`${perm}\``
+			}
+
+			return `\`${perm}\``
+		}).join(', ')
+
+		if (!neededPerms.includes('sendMessages')) message.channel.createMessage(`I don't have permission to ${permsString}... Please reinvite me or give me those permissions :(`)
+
 		return false
 	}
+
 	return true
 }
-*/
