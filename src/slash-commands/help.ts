@@ -1,10 +1,10 @@
 import { InteractionResponseType, ApplicationCommandOptionType, MessageFlags } from 'slash-commands'
-import { SlashCommand, ValueData } from '../types/SlashCommands'
+import { SlashCommand } from '../types/SlashCommands'
 import Embed from '../structures/Embed'
 
 export const command: SlashCommand = {
 	name: 'help',
-	description: 'Shows all available commands',
+	description: 'Shows all available commands.',
 	options: [
 		{
 			type: ApplicationCommandOptionType.STRING,
@@ -13,10 +13,10 @@ export const command: SlashCommand = {
 		}
 	],
 	async execute(app, i) {
-		const commandInput = (i.data?.options?.find(opt => opt.name === 'command') as ValueData<string> | undefined)?.value
+		const commandInput = i.data?.options?.find(opt => opt.name === 'command')?.value as string | undefined
 
 		if (commandInput) {
-			const cmd = app.commands.find(c => c.name === commandInput || (c.aliases.length && c.aliases.includes(commandInput ?? '')))
+			const cmd = app.commands.find(c => c.name === commandInput || (c.aliases.length && c.aliases.includes(commandInput)))
 
 			if (!cmd || (cmd.category === 'admin' && !app.sets.adminUsers.has(i.member.user.id))) {
 				// new ephemeral message only user can see, would be cool to use them for error messages

@@ -34,6 +34,19 @@ export async function run(this: App, message: Message): Promise<void> {
 		return
 	}
 
+	// add user entry to database
+	try {
+		await this.prisma.user.create({
+			data: {
+				id: message.author.id
+			}
+		})
+	}
+	catch (err) {
+		// user already has account
+	}
+
+
 	// execute command
 	try {
 		console.log(`${message.author.id} ran command: ${command.name}`)
