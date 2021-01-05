@@ -37,11 +37,7 @@ export const command: Command = {
 		const gameCommands = app.commands.filter(cmd => cmd.category === 'game').map(cmd => `\`${cmd.name}\``)
 
 		cmdEmbed.addField('📋 Information', infoCommands.join(', '))
-
-		// TODO this conditional will be useless once some game commands have been added
-		if (gameCommands.length) {
-			cmdEmbed.addField('🎲 Games', gameCommands.join(', '))
-		}
+		cmdEmbed.addField('🎲 Games', gameCommands.join(', '))
 
 		await reply(message, {
 			embed: cmdEmbed.embed

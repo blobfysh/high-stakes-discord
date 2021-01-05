@@ -2,8 +2,11 @@ import Eris from 'eris'
 import { PrismaClient } from '@prisma/client'
 import { Command } from './types/Commands'
 import ArgParser from './utils/ArgParser'
+import { DiscordInteractions } from 'slash-commands'
+import { SlashCommand } from './types/SlashCommands'
 import * as fs from 'fs'
 import * as path from 'path'
+import { botToken, clientId, debug } from './config'
 
 interface Sets {
 	adminUsers: Set<string>
@@ -14,6 +17,7 @@ class App {
 	bot: Eris.Client
 	prisma: PrismaClient
 	commands: Command[]
+	slashCommands: SlashCommand[]
 	parse: ArgParser
 	sets: Sets
 
@@ -21,6 +25,7 @@ class App {
 		this.bot = new Eris.Client(token, options)
 		this.prisma = new PrismaClient()
 		this.commands = []
+		this.slashCommands = []
 		this.parse = new ArgParser(this)
 		this.sets = this.loadSets()
 	}
@@ -30,6 +35,9 @@ class App {
 
 		// load all commands to array
 		this.commands = await this.loadCommands()
+
+		// load slash commands - new discord feature
+		this.slashCommands = await this.loadSlashCommands()
 
 		for (const event of eventFiles) {
 			const { run } = await import(`./events/${event}`)
@@ -55,6 +63,44 @@ class App {
 			}
 
 			const { command }: { command: Command } = await import(`./commands/${file}`)
+
+			commandsArr.push(command)
+		}
+
+		return commandsArr
+	}
+
+	async loadSlashCommands(): Promise<SlashCommand[]> {
+		const interactions = new DiscordInteractions({
+			applicationId: clientId,
+			publicKey: '',
+			authToken: botToken
+		})
+		const commandFiles = fs.readdirSync(path.join(__dirname, '/slash-commands'))
+		const commandsArr: SlashCommand[] = []
+
+		// remove current slash commands
+		const currentInteractions = await interactions.getApplicationCommands(debug ? '497302646521069568' : undefined)
+		for (const i of currentInteractions) {
+			await interactions.deleteApplicationCommand(i.id, debug ? '497302646521069568' : undefined)
+		}
+
+		console.log(`Removed ${currentInteractions.length} slash commands.`)
+
+		// loop through slash-commands files and create interactions
+		for (const file of commandFiles) {
+			try {
+				delete require.cache[require.resolve(`./slash-commands/${file}`)]
+			}
+			catch (err) {
+				console.warn(err)
+			}
+
+			const { command }: { command: SlashCommand } = await import(`./slash-commands/${file}`)
+
+			await interactions.createApplicationCommand(command, debug ? '497302646521069568' : undefined)
+
+			console.log(`Created slash command - ${command.name}`)
 
 			commandsArr.push(command)
 		}
