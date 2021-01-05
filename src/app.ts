@@ -6,7 +6,7 @@ import { DiscordInteractions } from 'slash-commands'
 import { SlashCommand } from './types/SlashCommands'
 import * as fs from 'fs'
 import * as path from 'path'
-import { botToken, clientId, debug } from './config'
+import { botToken, clientId, debug, testingGuildId } from './config'
 
 interface Sets {
 	adminUsers: Set<string>
@@ -73,6 +73,7 @@ class App {
 	async loadSlashCommands(): Promise<SlashCommand[]> {
 		const interactions = new DiscordInteractions({
 			applicationId: clientId,
+			// don't need publicKey since I receive interactions via gateway
 			publicKey: '',
 			authToken: botToken
 		})
@@ -80,9 +81,9 @@ class App {
 		const commandsArr: SlashCommand[] = []
 
 		// remove current slash commands
-		const currentInteractions = await interactions.getApplicationCommands(debug ? '497302646521069568' : undefined)
+		const currentInteractions = await interactions.getApplicationCommands(debug ? testingGuildId : undefined)
 		for (const i of currentInteractions) {
-			await interactions.deleteApplicationCommand(i.id, debug ? '497302646521069568' : undefined)
+			await interactions.deleteApplicationCommand(i.id, debug ? testingGuildId : undefined)
 		}
 
 		console.log(`Removed ${currentInteractions.length} slash commands.`)
@@ -98,7 +99,7 @@ class App {
 
 			const { command }: { command: SlashCommand } = await import(`./slash-commands/${file}`)
 
-			await interactions.createApplicationCommand(command, debug ? '497302646521069568' : undefined)
+			await interactions.createApplicationCommand(command, debug ? testingGuildId : undefined)
 
 			console.log(`Created slash command - ${command.name}`)
 
