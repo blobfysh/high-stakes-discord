@@ -47,7 +47,7 @@ export const command: Command = {
 		})
 
 		await reply(message, {
-			content: `You currently have ${userData?.balance ?? 0} credits.`
+			content: `You currently have **${userData?.balance ?? 0} credits**.`
 		})
 	}
 }

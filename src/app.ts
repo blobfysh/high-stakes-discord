@@ -2,6 +2,7 @@ import Eris from 'eris'
 import { PrismaClient } from '@prisma/client'
 import { Command } from './types/Commands'
 import ArgParser from './utils/ArgParser'
+import Cooldowns from './utils/Cooldowns'
 import { DiscordInteractions } from 'slash-commands'
 import { SlashCommand } from './types/SlashCommands'
 import * as fs from 'fs'
@@ -19,6 +20,7 @@ class App {
 	commands: Command[]
 	slashCommands: SlashCommand[]
 	parse: ArgParser
+	cd: Cooldowns
 	sets: Sets
 
 	constructor(token: string, options: Eris.ClientOptions) {
@@ -27,6 +29,7 @@ class App {
 		this.commands = []
 		this.slashCommands = []
 		this.parse = new ArgParser(this)
+		this.cd = new Cooldowns(this)
 		this.sets = this.loadSets()
 	}
 

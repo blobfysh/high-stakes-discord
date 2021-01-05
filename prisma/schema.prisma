@@ -29,5 +29,8 @@ model Cooldown {
 }
 
 enum CooldownType {
+	COINFLIP
+	BLACKJACK
+	SLOTS
 	DAILY
 }

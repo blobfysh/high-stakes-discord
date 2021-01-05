@@ -1,0 +1,4 @@
+-- AlterEnum
+ALTER TYPE "CooldownType" ADD VALUE 'COINFLIP';
+ALTER TYPE "CooldownType" ADD VALUE 'BLACKJACK';
+ALTER TYPE "CooldownType" ADD VALUE 'SLOTS';
