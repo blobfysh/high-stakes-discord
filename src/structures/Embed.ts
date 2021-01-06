@@ -78,7 +78,7 @@ class Embed {
 		return this
 	}
 
-	setFooter(text: string, icon: string | undefined): this {
+	setFooter(text: string, icon?: string): this {
 		if (!text) return this
 
 		this.embed.footer = {
@@ -95,7 +95,7 @@ class Embed {
 		return this
 	}
 
-	setAuthor(name: string, icon: string | undefined, url: string | undefined): this {
+	setAuthor(name: string, icon?: string, url?: string): this {
 		if (!name) return this
 
 		this.embed.author = {
