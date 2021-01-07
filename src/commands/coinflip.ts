@@ -28,12 +28,12 @@ export const command: Command = {
 		// validations
 		if (cooldown) {
 			return reply(message, {
-				content: `You need to wait \`${cooldown}\` before flipping another coin.`
+				content: `❌ You need to wait \`${cooldown}\` before flipping another coin.`
 			})
 		}
 		else if (!gambleAmount || gambleAmount < 100) {
 			return reply(message, {
-				content: 'Please specify an amount of at least **100 credits** to gamble!'
+				content: '❌ Please specify an amount of at least **100 credits** to gamble!'
 			})
 		}
 		else if (gambleAmount > userData.balance) {
