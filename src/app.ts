@@ -78,10 +78,10 @@ class App {
 
 	async loadSlashCommands(): Promise<SlashCommand[]> {
 		const interactions = new DiscordInteractions({
-			applicationId: clientId,
+			applicationId: clientId as string,
 			// don't need publicKey since I receive interactions via gateway
 			publicKey: '',
-			authToken: botToken
+			authToken: botToken as string
 		})
 		const commandFiles = fs.readdirSync(path.join(__dirname, '/slash-commands'))
 		const commandsArr: SlashCommand[] = []
