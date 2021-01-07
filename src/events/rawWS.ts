@@ -1,13 +1,12 @@
 import { RawPacket } from 'eris'
-import fetch from 'node-fetch'
 import { InteractionType } from 'slash-commands'
-import { Interaction } from '../types/SlashCommands'
+import Interaction from '../structures/Interaction'
 import App from '../app'
 
 export async function run(this: App, packet: RawPacket, id: number): Promise<void> {
 	// interactions stuff
 	if (packet.t === 'INTERACTION_CREATE') {
-		const interaction: Interaction = packet.d
+		const interaction = new Interaction(packet.d)
 
 		if (interaction.member.user.bot) return
 
@@ -26,21 +25,11 @@ export async function run(this: App, packet: RawPacket, id: number): Promise<voi
 				// user already has account
 			}
 
-			const response = await command?.execute(this, interaction)
-
-			if (response) {
-				try {
-					await fetch(`https://discord.com/api/v8/interactions/${interaction.id}/${interaction.token}/callback`, {
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify(response)
-					})
-				}
-				catch (err) {
-					console.error(err)
-				}
+			try {
+				await command?.execute(this, interaction)
+			}
+			catch (err) {
+				console.error(err)
 			}
 		}
 	}

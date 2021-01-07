@@ -20,13 +20,13 @@ export const command: SlashCommand = {
 			// user mentions in normal messages would cause bot to cache the user, but user inputs with slash commands won't be cached
 			// kinda sucks tbh
 			if (!user) {
-				return {
+				return i.respond({
 					type: InteractionResponseType.CHANNEL_MESSAGE,
 					data: {
 						content: '😭 I could not find that user! (this can happen if I haven\'t seen the user type before)',
 						flags: MessageFlags.EPHEMERAL
 					}
-				}
+				})
 			}
 
 			const userData = await app.prisma.user.findUnique({
@@ -39,20 +39,20 @@ export const command: SlashCommand = {
 			})
 
 			if (!userData) {
-				return {
+				return i.respond({
 					type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 					data: {
 						content: `❌ ${user.username}#${user.discriminator} does not have an account!`
 					}
-				}
+				})
 			}
 
-			return {
+			return i.respond({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
 					content: `${user.username}#${user.discriminator} currently has ${userData.balance} credits.`
 				}
-			}
+			})
 		}
 
 		const user = await app.prisma.user.findUnique({
@@ -64,12 +64,12 @@ export const command: SlashCommand = {
 			}
 		})
 
-		return {
+		return i.respond({
 			type: InteractionResponseType.CHANNEL_MESSAGE,
 			data: {
 				content: `You currently have ${user?.balance ?? 0} credits.`,
 				flags: MessageFlags.EPHEMERAL
 			}
-		}
+		})
 	}
 }

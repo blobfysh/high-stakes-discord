@@ -2,7 +2,6 @@ import { User } from '@prisma/client'
 import { Command } from '../types/Commands'
 import { reply } from '../utils/messageUtils'
 import Embed from '../structures/Embed'
-import { Message } from 'eris'
 
 interface Card {
 	face: string
@@ -33,16 +32,19 @@ export const command: Command = {
 		if (!gambleAmount && args[0] && args[0].toLowerCase() === 'all') {
 			gambleAmount = userData.balance >= 1000000 ? 1000000 : userData.balance
 		}
+		else if (!gambleAmount && args[0] && args[0].toLowerCase() === 'half') {
+			gambleAmount = Math.floor(userData.balance / 2) >= 1000000 ? 1000000 : Math.floor(userData.balance / 2)
+		}
 
 		// validations
 		if (cooldown) {
 			return reply(message, {
-				content: `You just played!!! Wait \`${cooldown}\` before starting another blackjack.`
+				content: `❌ You just played!!! Wait \`${cooldown}\` before starting another blackjack.`
 			})
 		}
 		else if (!gambleAmount || gambleAmount < 100) {
 			return reply(message, {
-				content: 'Please specify an amount of at least **100 credits** to gamble!'
+				content: '❌ Please specify an amount of at least **100 credits** to gamble!'
 			})
 		}
 		else if (gambleAmount > userData.balance) {
@@ -76,7 +78,7 @@ export const command: Command = {
 		await app.cd.createCooldown(message.author.id, 'BLACKJACK', 90)
 
 		await message.channel.createMessage({
-			embed: genEmbed(message, playerCards, dealerCards, gambleAmount).embed
+			embed: genEmbed(message.author.username, playerCards, dealerCards, gambleAmount).embed
 		})
 
 		col.e.on('collect', async m => {
@@ -89,12 +91,12 @@ export const command: Command = {
 					app.msgCollector.stopCollector(col)
 
 					message.channel.createMessage({
-						embed: loserEmbed(message, playerCards, dealerCards, gambleAmount).embed
+						embed: loserEmbed(message.author.username, playerCards, dealerCards, gambleAmount).embed
 					})
 				}
 				else {
 					message.channel.createMessage({
-						embed: genEmbed(message, playerCards, dealerCards, gambleAmount).embed
+						embed: genEmbed(message.author.username, playerCards, dealerCards, gambleAmount).embed
 					})
 				}
 			}
@@ -137,13 +139,13 @@ export const command: Command = {
 					})
 
 					message.channel.createMessage({
-						embed: winnerEmbed(message, playerCards, dealerCards, gambleAmount).embed
+						embed: winnerEmbed(message.author.username, playerCards, dealerCards, gambleAmount).embed
 					})
 				}
 				else if (playerFinal < dealerFinal) {
 					// player lost
 					message.channel.createMessage({
-						embed: loserEmbed(message, playerCards, dealerCards, gambleAmount).embed
+						embed: loserEmbed(message.author.username, playerCards, dealerCards, gambleAmount).embed
 					})
 				}
 				else {
@@ -160,7 +162,7 @@ export const command: Command = {
 					})
 
 					message.channel.createMessage({
-						embed: tieEmbed(message, playerCards, dealerCards).embed
+						embed: tieEmbed(message.author.username, playerCards, dealerCards).embed
 					})
 				}
 			}
@@ -175,7 +177,7 @@ export const command: Command = {
 	}
 }
 
-function drawCard(deck: Card[]): Card {
+export function drawCard(deck: Card[]): Card {
 	const index = Math.floor(Math.random() * deck.length)
 	const card = deck[index]
 	deck.splice(index, 1) // Removes card from original array
@@ -183,7 +185,7 @@ function drawCard(deck: Card[]): Card {
 	return card
 }
 
-function initDeck(): Card[] {
+export function initDeck(): Card[] {
 	const deck: Card[] = []
 
 	for (let i = 0; i < suits.length; i++) {
@@ -214,7 +216,7 @@ function initDeck(): Card[] {
 	return deck
 }
 
-function genEmbed(message: Message, playerCards: Card[], dealerCards: Card[], gambleAmount: number) {
+export function genEmbed(username: string, playerCards: Card[], dealerCards: Card[], gambleAmount: number): Embed {
 	const playerVal = getScore(playerCards)
 	const dealerVal = getScore(dealerCards)
 	let playerString = ''
@@ -228,11 +230,11 @@ function genEmbed(message: Message, playerCards: Card[], dealerCards: Card[], ga
 	}
 
 	const embed = new Embed()
-		.setAuthor('Blackjack', message.author.avatarURL)
+		.setAuthor('Blackjack')
 		.setDescription('Type `hit` to draw another card or `stand` to pass.')
 		.addField('__Bet__', `${gambleAmount} credits`)
 		.addBlankField()
-		.addField(`${message.author.username} - **${playerCards.filter(card => card.face === 'A').length && playerVal.score <= 21 ? `${playerVal.score}/${playerVal.minScore}` : playerVal.minScore}**`, playerString)
+		.addField(`${username} - **${playerCards.filter(card => card.face === 'A').length && playerVal.score <= 21 ? `${playerVal.score}/${playerVal.minScore}` : playerVal.minScore}**`, playerString)
 		.addField(`😎 Dealer - **${dealerVal.score > 21 ? dealerVal.minScore : dealerVal.score}**`, dealerString)
 		.setFooter('You have 60 seconds to finish this game.')
 
@@ -240,7 +242,7 @@ function genEmbed(message: Message, playerCards: Card[], dealerCards: Card[], ga
 }
 
 
-function getScore(playersHand: Card[]) {
+export function getScore(playersHand: Card[]): { score: number, minScore: number } {
 	let score = 0
 	let minScore = 0 // Used if player has aces...
 
@@ -256,7 +258,7 @@ function getScore(playersHand: Card[]) {
 	return { score, minScore }
 }
 
-function winnerEmbed(message: Message, playerCards: Card[], dealerCards: Card[], gambleAmount: number) {
+export function winnerEmbed(username: string, playerCards: Card[], dealerCards: Card[], gambleAmount: number): Embed {
 	const playerVal = getScore(playerCards)
 	const dealerVal = getScore(dealerCards)
 	let playerString = ''
@@ -270,17 +272,17 @@ function winnerEmbed(message: Message, playerCards: Card[], dealerCards: Card[],
 	}
 
 	const embed = new Embed()
-		.setAuthor('Blackjack', message.author.avatarURL)
+		.setAuthor('Blackjack')
 		.setDescription(`The dealer busted! You won **${gambleAmount * 2} credits**`)
 		.addBlankField()
-		.addField(`${message.author.username} - **${playerCards.filter(card => card.face === 'A').length && playerVal.score <= 21 ? `${playerVal.score}/${playerVal.minScore}` : playerVal.minScore}**`, playerString)
+		.addField(`${username} - **${playerCards.filter(card => card.face === 'A').length && playerVal.score <= 21 ? `${playerVal.score}/${playerVal.minScore}` : playerVal.minScore}**`, playerString)
 		.addField(`😡 Dealer - **${dealerVal.score > 21 ? dealerVal.minScore : dealerVal.score}**`, dealerString)
 		.setColor(720640)
 
 	return embed
 }
 
-function loserEmbed(message: Message, playerCards: Card[], dealerCards: Card[], gambleAmount: number) {
+export function loserEmbed(username: string, playerCards: Card[], dealerCards: Card[], gambleAmount: number): Embed {
 	const playerVal = getScore(playerCards)
 	const dealerVal = getScore(dealerCards)
 	let playerString = ''
@@ -294,17 +296,17 @@ function loserEmbed(message: Message, playerCards: Card[], dealerCards: Card[], 
 	}
 
 	const embed = new Embed()
-		.setAuthor('Blackjack', message.author.avatarURL)
+		.setAuthor('Blackjack')
 		.setDescription(`You lost **${gambleAmount} credits**...`)
 		.addBlankField()
-		.addField(`${message.author.username} - **${playerCards.filter(card => card.face === 'A').length && playerVal.score <= 21 ? `${playerVal.score}/${playerVal.minScore}` : playerVal.minScore}**`, playerString)
+		.addField(`${username} - **${playerCards.filter(card => card.face === 'A').length && playerVal.score <= 21 ? `${playerVal.score}/${playerVal.minScore}` : playerVal.minScore}**`, playerString)
 		.addField(`😂 Dealer - **${dealerVal.score > 21 ? dealerVal.minScore : dealerVal.score}**`, dealerString)
 		.setColor(13632027)
 
 	return embed
 }
 
-function tieEmbed(message: Message, playerCards: Card[], dealerCards: Card[]) {
+export function tieEmbed(username: string, playerCards: Card[], dealerCards: Card[]): Embed {
 	const playerVal = getScore(playerCards)
 	const dealerVal = getScore(dealerCards)
 	let playerString = ''
@@ -318,10 +320,10 @@ function tieEmbed(message: Message, playerCards: Card[], dealerCards: Card[]) {
 	}
 
 	const embed = new Embed()
-		.setAuthor('Blackjack', message.author.avatarURL)
+		.setAuthor('Blackjack')
 		.setDescription('It\'s a tie! You lost no credits')
 		.addBlankField()
-		.addField(`${message.author.username} - **${playerCards.filter(card => card.face === 'A').length && playerVal.score <= 21 ? `${playerVal.score}/${playerVal.minScore}` : playerVal.minScore}**`, playerString)
+		.addField(`${username} - **${playerCards.filter(card => card.face === 'A').length && playerVal.score <= 21 ? `${playerVal.score}/${playerVal.minScore}` : playerVal.minScore}**`, playerString)
 		.addField(`😡 Dealer - **${dealerVal.score > 21 ? dealerVal.minScore : dealerVal.score}**`, dealerString)
 		.setColor(10395294)
 

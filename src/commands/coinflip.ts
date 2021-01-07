@@ -21,6 +21,9 @@ export const command: Command = {
 		if (!gambleAmount && args[0] && args[0].toLowerCase() === 'all') {
 			gambleAmount = userData.balance >= 1000000 ? 1000000 : userData.balance
 		}
+		else if (!gambleAmount && args[0] && args[0].toLowerCase() === 'half') {
+			gambleAmount = Math.floor(userData.balance / 2) >= 1000000 ? 1000000 : Math.floor(userData.balance / 2)
+		}
 
 		// validations
 		if (cooldown) {

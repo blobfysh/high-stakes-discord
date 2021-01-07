@@ -21,13 +21,13 @@ export const command: SlashCommand = {
 			if (!cmd || (cmd.category === 'admin' && !app.sets.adminUsers.has(i.member.user.id))) {
 				// new ephemeral message only user can see, would be cool to use them for error messages
 				// sadly they don't work with embeds yet :C
-				return {
+				return i.respond({
 					type: InteractionResponseType.CHANNEL_MESSAGE,
 					data: {
 						content: '❌ That command doesn\'t exist!',
 						flags: MessageFlags.EPHEMERAL
 					}
-				}
+				})
 			}
 
 			const cmdEmbed = new Embed()
@@ -38,12 +38,12 @@ export const command: SlashCommand = {
 				cmdEmbed.addField('Aliases', cmd.aliases.map(alias => `\`${alias}\``).join(', '))
 			}
 
-			return {
+			return i.respond({
 				type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 				data: {
 					embeds: [cmdEmbed.embed]
 				}
-			}
+			})
 		}
 
 		const cmdEmbed = new Embed()
@@ -56,11 +56,11 @@ export const command: SlashCommand = {
 		cmdEmbed.addField('📋 Information', infoCommands.join(', '))
 		cmdEmbed.addField('🎲 Games', gameCommands.join(', '))
 
-		return {
+		await i.respond({
 			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 			data: {
 				embeds: [cmdEmbed.embed]
 			}
-		}
+		})
 	}
 }
