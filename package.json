@@ -40,7 +40,7 @@
   "dependencies": {
     "@prisma/client": "^2.14.0",
     "dotenv": "^8.2.0",
-    "eris": "0.13.4",
+    "eris": "0.14.0",
     "node-fetch": "^2.6.1",
     "slash-commands": "1.2.2"
   }

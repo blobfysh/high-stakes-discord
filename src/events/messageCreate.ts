@@ -81,7 +81,7 @@ function botHasPermissions(message: Message<GuildTextableChannel>, requiredPerms
 	const neededPerms: CommandPermission[] = []
 
 	for (const perm of requiredPerms) {
-		if (!botPerms.has(perm)) {
+		if (!botPerms.has(perm.toString())) {
 			neededPerms.push(perm)
 		}
 	}

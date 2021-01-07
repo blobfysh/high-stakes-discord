@@ -6,7 +6,7 @@ import App from '../app'
 export async function run(this: App, packet: RawPacket, id: number): Promise<void> {
 	// interactions stuff
 	if (packet.t === 'INTERACTION_CREATE') {
-		const interaction = new Interaction(packet.d)
+		const interaction = new Interaction(packet.d as Interaction)
 
 		if (interaction.member.user.bot) return
 
