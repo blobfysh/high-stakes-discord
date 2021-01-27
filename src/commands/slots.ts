@@ -16,7 +16,7 @@ export const command: Command = {
 	aliases: [],
 	description: 'Bet some credits on a game of slots!',
 	category: 'game',
-	permissions: ['sendMessages'],
+	permissions: ['sendMessages', 'embedLinks'],
 	guildOnly: true,
 	async execute(app, message, { args }) {
 		const userData = await app.prisma.user.findUnique({

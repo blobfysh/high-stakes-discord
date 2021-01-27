@@ -18,7 +18,7 @@ export const command: Command = {
 	aliases: ['bj'],
 	description: 'Play a game of blackjack. Type hit to draw a random card from the deck or type stand to stop drawing cards and see if the dealer gets closer to 21 than you. Whoever gets closer to 21 without going over, wins!',
 	category: 'game',
-	permissions: ['sendMessages'],
+	permissions: ['sendMessages', 'embedLinks'],
 	guildOnly: true,
 	async execute(app, message, { args }) {
 		const userData = await app.prisma.user.findUnique({

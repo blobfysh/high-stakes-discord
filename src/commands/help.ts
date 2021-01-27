@@ -8,7 +8,7 @@ export const command: Command = {
 	aliases: [],
 	description: 'Shows all available commands',
 	category: 'info',
-	permissions: ['sendMessages'],
+	permissions: ['sendMessages', 'embedLinks'],
 	guildOnly: false,
 	async execute(app, message, { args }) {
 		if (args[0]) {
