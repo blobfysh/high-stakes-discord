@@ -1,64 +1,71 @@
+import { InteractionResponseType, MessageFlags, ApplicationCommandOptionType } from 'slash-commands'
+import { SlashCommand } from '../types/SlashCommands'
 import { User } from '@prisma/client'
-import { Command } from '../types/Commands'
-import { reply } from '../utils/messageUtils'
 import { icons } from '../config'
 import Embed from '../structures/Embed'
+import { getSlot } from '../commands/slots'
 
-interface slotsColumn {
-	top: string
-	mid: string
-	bot: string
-	multi: number
-}
-
-export const command: Command = {
+export const command: SlashCommand = {
 	name: 'slots',
-	aliases: [],
 	description: 'Bet some credits on a game of slots!',
-	category: 'game',
-	permissions: ['sendMessages', 'embedLinks'],
-	guildOnly: true,
-	async execute(app, message, { args }) {
+	options: [
+		{
+			type: ApplicationCommandOptionType.INTEGER,
+			name: 'amount',
+			description: 'Amount to bet.',
+			required: true
+		}
+	],
+	async execute(app, i) {
 		const userData = await app.prisma.user.findUnique({
 			where: {
-				id: message.author.id
+				id: i.member.user.id
 			}
 		}) as User
-		const cooldown = await app.cd.getCooldown(message.author.id, 'SLOTS')
-		let gambleAmount = app.parse.numbers(args)[0]
-
-		if (!gambleAmount && args[0] && args[0].toLowerCase() === 'all') {
-			gambleAmount = userData.balance >= 1000000 ? 1000000 : userData.balance
-		}
-		else if (!gambleAmount && args[0] && args[0].toLowerCase() === 'half') {
-			gambleAmount = Math.floor(userData.balance / 2) >= 1000000 ? 1000000 : Math.floor(userData.balance / 2)
-		}
+		const cooldown = await app.cd.getCooldown(i.member.user.id, 'SLOTS')
+		const gambleAmount = i.data?.options?.find(opt => opt.name === 'amount')?.value as number
 
 		// validations
 		if (cooldown) {
-			return reply(message, {
-				content: `❌ You need to wait \`${cooldown}\` before playing another game of slots.`
+			return i.respond({
+				type: InteractionResponseType.CHANNEL_MESSAGE,
+				data: {
+					content: `❌ You need to wait \`${cooldown}\` before playing another game of slots.`,
+					flags: MessageFlags.EPHEMERAL
+				}
 			})
 		}
-		else if (!gambleAmount || gambleAmount < 100) {
-			return reply(message, {
-				content: '❌ Please specify an amount of at least **100 credits** to gamble!'
+		else if (gambleAmount < 100) {
+			return i.respond({
+				type: InteractionResponseType.CHANNEL_MESSAGE,
+				data: {
+					content: '❌ Please specify an amount of at least **100 credits** to gamble!',
+					flags: MessageFlags.EPHEMERAL
+				}
 			})
 		}
 		else if (gambleAmount > userData.balance) {
-			return reply(message, {
-				content: `❌ You don't have that many credits! You currently have **${userData.balance} credits**.`
+			return i.respond({
+				type: InteractionResponseType.CHANNEL_MESSAGE,
+				data: {
+					content: `❌ You don't have that many credits! You currently have **${userData.balance} credits**.`,
+					flags: MessageFlags.EPHEMERAL
+				}
 			})
 		}
 		else if (gambleAmount > 1000000) {
-			return reply(message, {
-				content: '❌ Chill out!! You can only bet up to 1,000,000 credits here.'
+			return i.respond({
+				type: InteractionResponseType.CHANNEL_MESSAGE,
+				data: {
+					content: '❌ Chill out!! You can only bet up to 1,000,000 credits here.',
+					flags: MessageFlags.EPHEMERAL
+				}
 			})
 		}
 
 		await app.prisma.user.update({
 			where: {
-				id: message.author.id
+				id: i.member.user.id
 			},
 			data: {
 				balance: {
@@ -87,7 +94,7 @@ export const command: Command = {
 		if (winnings > 0) {
 			await app.prisma.user.update({
 				where: {
-					id: message.author.id
+					id: i.member.user.id
 				},
 				data: {
 					balance: {
@@ -101,8 +108,11 @@ export const command: Command = {
 			.setTitle('Slots')
 			.setDescription(`${icons.slotsTop.repeat(3)}\n${icons.slotsMid.repeat(3)}\n${icons.slotsBot.repeat(3)}`)
 
-		const botMessage = await message.channel.createMessage({
-			embed: slotsEmbed.embed
+		await i.respond({
+			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+			data: {
+				embeds: [slotsEmbed.embed]
+			}
 		})
 
 		setTimeout(() => {
@@ -110,8 +120,8 @@ export const command: Command = {
 				.setTitle('Slots')
 				.setDescription(`${col1.top}${icons.slotsTop.repeat(2)}\n${col1.mid}${icons.slotsMid.repeat(2)}\n${col1.bot}${icons.slotsBot.repeat(2)}`)
 
-			botMessage.edit({
-				embed: newEmbed.embed
+			i.editResponse({
+				embeds: [newEmbed.embed]
 			})
 		}, 1000)
 
@@ -120,8 +130,8 @@ export const command: Command = {
 				.setTitle('Slots')
 				.setDescription(`${col1.top}${col2.top}${icons.slotsTop}\n${col1.mid}${col2.mid}${icons.slotsMid}\n${col1.bot}${col2.bot}${icons.slotsBot}`)
 
-			botMessage.edit({
-				embed: newEmbed.embed
+			i.editResponse({
+				embeds: [newEmbed.embed]
 			})
 		}, 2000)
 
@@ -140,46 +150,12 @@ export const command: Command = {
 				endString = 'You lost!'
 			}
 
-			botMessage.edit({
-				embed: newEmbed.embed,
-				content: endString
+			i.editResponse({
+				content: endString,
+				embeds: [newEmbed.embed]
 			})
 		}, 3500)
 
-		await app.cd.createCooldown(message.author.id, 'SLOTS', 60)
-	}
-}
-
-export function getSlot(randomInt: number): slotsColumn {
-	if (randomInt < 0.1) {
-		return {
-			top: '💰',
-			mid: '💎',
-			bot: '💵',
-			multi: 10
-		}
-	}
-	else if (randomInt < 0.3) {
-		return {
-			top: '💸',
-			mid: '💰',
-			bot: '💎',
-			multi: 5
-		}
-	}
-	else if (randomInt < 0.6) {
-		return {
-			top: '💵',
-			mid: '💸',
-			bot: '💰',
-			multi: 3
-		}
-	}
-
-	return {
-		top: '💎',
-		mid: '💵',
-		bot: '💸',
-		multi: 2
+		await app.cd.createCooldown(i.member.user.id, 'SLOTS', 60)
 	}
 }

@@ -4,6 +4,9 @@ import fetch from 'node-fetch'
 import { WebhookPayload } from 'eris'
 import { clientId } from '../config'
 
+// avatarURL and username have no effect on the interaction webhook
+type InteractionWebhookOptions = Omit<WebhookPayload, 'file' | 'auth' | 'avatarURL' | 'username' | 'allowedMentions'>
+
 class Interaction {
 	id: string
 	type: InteractionType
@@ -39,8 +42,22 @@ class Interaction {
 		})
 	}
 
-	// avatarURL and username have no effect on the interaction webhook
-	async followUp(options: Omit<WebhookPayload, 'file' | 'auth' | 'avatarURL' | 'username' | 'allowedMentions'>): Promise<void> {
+	async editResponse(options: InteractionWebhookOptions): Promise<void> {
+		await fetch(`https://discord.com/api/v8/webhooks/${clientId}/${this.token}/messages/@original${options.wait ? '?wait=true' : ''}`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				content: options.content,
+				embeds: options.embeds,
+				tts: options.tts
+			})
+		})
+	}
+
+
+	async followUp(options: InteractionWebhookOptions): Promise<void> {
 		await fetch(`https://discord.com/api/v8/webhooks/${clientId}/${this.token}${options.wait ? '?wait=true' : ''}`, {
 			method: 'POST',
 			headers: {

@@ -54,7 +54,7 @@ export const command: SlashCommand = {
 		const gameCommands = app.commands.filter(cmd => cmd.category === 'game').map(cmd => `\`${cmd.name}\``)
 
 		cmdEmbed.addField('📋 Information', infoCommands.join(', '))
-		cmdEmbed.addField('🎲 Games', gameCommands.join(', '))
+		cmdEmbed.addField('🎲 Gambling', gameCommands.join(', '))
 
 		await i.respond({
 			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
