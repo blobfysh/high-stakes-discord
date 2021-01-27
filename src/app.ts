@@ -8,7 +8,7 @@ import { DiscordInteractions } from 'slash-commands'
 import { SlashCommand } from './types/SlashCommands'
 import * as fs from 'fs'
 import * as path from 'path'
-import { botToken, clientId, debug, testingGuildId } from './config'
+import { botToken, clientId, debug, testingGuildId, adminUsers } from './config'
 
 interface Sets {
 	adminUsers: Set<string>
@@ -117,7 +117,7 @@ class App {
 
 	loadSets(): Sets {
 		return {
-			adminUsers: new Set(['168958344361541633']),
+			adminUsers: new Set(adminUsers),
 			spamCooldown: new Set()
 		}
 	}

@@ -5,7 +5,7 @@ import Embed from '../structures/Embed'
 
 export const command: Command = {
 	name: 'help',
-	aliases: ['hello'],
+	aliases: [],
 	description: 'Shows all available commands',
 	category: 'info',
 	permissions: ['sendMessages'],
